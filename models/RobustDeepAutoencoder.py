@@ -33,6 +33,10 @@ def shrink(epsilon, x):
    
 class RDAE(object):
     """
+    MOFICATION: @Daniel Legorreta
+    It was adapted for test with Time Series
+    Date Modification: August-2018
+
     @author: Chong Zhou
     2.0 version.
     complete: 10/17/2016
@@ -45,11 +49,6 @@ class RDAE(object):
         L is a non-linearly low rank matrix and S is a sparse matrix.
         argmin ||L - Decoder(Encoder(L))|| + ||S||_1
         Use Alternating projection to train model
-
-    MOFICATION: @Daniel Legorreta
-    It was adapted for test with Time Series
-    Date Modification: August-2018
-
 
     """
     def __init__(self, sess, layers_sizes, lambda_=1.0, error = 1.0e-7,transfer_function=tf.nn.sigmoid,learning_rate=0.001):
