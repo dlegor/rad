@@ -23,4 +23,4 @@ The models are in two functions:
 
 * [Stable Principal Component Pursuit](https://arxiv.org/abs/1001.2363)
 * [Robust Principal Component Analysis?](http://statweb.stanford.edu/~candes/papers/RobustPCA.pdf)
-* [https://www.kdd.org/kdd2017/papers/view/anomaly-detection-with-robust-deep-auto-encoders](https://www.kdd.org/kdd2017/papers/view/anomaly-detection-with-robust-deep-auto-encoders)
+* [Anomaly Detection with Robust Deep Auto-encoders](https://www.kdd.org/kdd2017/papers/view/anomaly-detection-with-robust-deep-auto-encoders)
