@@ -1,5 +1,6 @@
-#Anomaly Outliers over Time Series
+#Outliers in Time Series
 #@DLegorreta
+
 import pandas as pd 
 import numpy as np 
 from statsmodels.tsa.stattools import adfuller
@@ -22,12 +23,13 @@ def check_representation(frequency,X):
                     "Expected 1D array, got 2D array instead")
 	if X.shape[0]%frequency!=0:
 		raise ValueError(
-                    "Expected 1D array with the length of this array should be divisible by frequency")
+                    "Expected 1D array with the length of this array\ 
+			should be divisible by frequency")
 	else:
 	    return X
 	    
 def autodiff(X):
-	""" Apply Test Dickey-Fuller Test over Time Serie
+	""" Apply Test Dickey-Fuller Test in Time Serie
 	"""
 	adf=adfuller(X)
 	if(adf[1]>0.05):
@@ -39,7 +41,7 @@ def autodiff(X):
 		return X,flag
 
 def scale(Val_scale,X):
-	""" Normalize the Time Serie
+	""" Normalization of the Time Serie
 	"""
 	if(Val_scale):
 		global_mean=np.mean(X)
