@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.linalg as nplin
 import tensorflow as tf
-from  .DeepAE import * 
+from  ._DeepAE import * 
 import sklearn.preprocessing as prep
 
 
