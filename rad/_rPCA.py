@@ -1,17 +1,17 @@
+"""Robust Principal Component Analysis"""
+
 # Code Stable Principal Component Pursuit 
 #@DLegorreta
 
 import numpy as np 
 import scipy as sc
-from scipy import linalg
-from statsmodels import robust
-from numba import double
-from numba.decorators import jit
+from numba import double,jit
 
 @jit('f8[:](f8[:],f4)')
 def Dsoft(M,penalty):
     """ Inverts the singular values
     takes advantage of the fact that singular values are never negative
+
     Parameters
     ----------
     M : numpy array
@@ -30,6 +30,7 @@ def Dsoft(M,penalty):
 def SVT(M,penalty):
     """
     Singular Value Thresholding on a numeric matrix
+    
     Parameters
     ----------
     M : numpy array
@@ -48,7 +49,6 @@ def SVT(M,penalty):
     Ds=Dsoft(s,penalty)
     #L=np.dot(U,np.diag(Ds))
     S=np.dot(np.dot(U,np.diag(Ds)),V)
-    #np.dot(U,np.dot(np.diag(Ds),V))
     return S,Ds
 
 @jit(forceobj=True)
@@ -57,16 +57,6 @@ def SoftThresholdMatrix(x,penalty):
     """ 
     x= np.sign(x)*np.maximum(np.abs(x)-penalty,0)
     return x
-
-@jit
-def median(X):
-    #X=np.array(X).astype('float64')# No se usa esta funcion en el code, se encontraba en la fuente original de Netflix
-    return np.median(X)
-
-@jit(forceobj=True)
-def mad(X):
-    #X=np.array(X).astype('float64')
-    return robust.mad(X)
 
 @jit(forceobj=True)
 def getDynamicMu(X):
@@ -110,6 +100,7 @@ def objective(L,S,E):
 def RPCA(X,Lpenalty=-1,Spenalty =-1, verbose = True):
     """
     Robust Principal Component Pursuit.
+
     Parameters
     ----------
     X : numpy array 
@@ -118,56 +109,65 @@ def RPCA(X,Lpenalty=-1,Spenalty =-1, verbose = True):
               Scalar to penalize remainder matrix to find Anomalous Values or Noise Values
     verbose:  bool, optional (default=False)
               Controls the verbosity of the matrix building process.
+    
     Returns:
     --------
-    X : numpy array original
+    X : numpy array original (DEPRECATED)
     L_matrix : numpy array, L_matrix is low rank 
     S_matrix : numpy array, S_matrix is sparse 
     E_matrix : numpy array, E_matrix is the remainder matrix of noise
+    
     Reference:
     ----------
     Stable Principal Component Pursuit
     Zihan Zhou, Xiaodong Li, John Wright, Emmanuel Candes, Yi Ma
     https://arxiv.org/pdf/1001.2363.pdf
     """
+
     X=np.array(X).astype('float64').copy()
+    
     m,n=X.shape
     
+    #Penality parameters
     if (Lpenalty == -1):
         Lpenalty = (1.4)/np.sqrt(min(n,m))
+
     if (Spenalty == -1):
         Spenalty=(1.4)/np.sqrt(max(n,m))
-        #if (m > n):
-        #    Spenalty = 1.4 / np.sqrt(m) 
-        #else: 
-         #   Spenalty = 1.4 / np.sqrt(n)
-            
+                    
+    #Convergence condition                
     itere=1
     maxIter=2000
     converged=False 
     obj_prev=0.5*np.linalg.norm(X,'fro')
-    tol=(1e-10) * obj_prev
+    tol=(1e-8) * obj_prev
     diff=2*tol
     mu=(X.size)/(4*np.linalg.norm(X,1))
-    print("Value obj_prev %2.10f and tol %2.10f"%(obj_prev,tol) )
+
+    #Initialization    
     L_matrix =np.zeros_like(X,dtype='float')
     S_matrix =np.zeros_like(X,dtype='float')
     E_matrix =np.zeros_like(X,dtype='float')
+    
+    #Optimization
     while (itere < maxIter and diff > tol):
 
         S_matrix,S_1 = getS(X, L_matrix, mu, Spenalty)
-        #S_matrix = S[0]
+    
         L_matrix,L_1 = getL(X, S_matrix, mu, Lpenalty)
-        #L_matrix = L[0]
+    
         E_matrix,E_1 = getE(X, L_matrix, S_matrix)
-        #E_matrix = E[0]
+    
         obj = objective(L_1,S_1, E_1)
+    
         if (verbose):
             print("Objective function: %4.8f  on previous iteration %d "%(obj_prev,itere-1))
             print("Objective function: %4.8f  on iteration %d "%(obj,itere))
+    
             diff=np.abs(obj_prev-obj)
             obj_prev=obj
             mu=getDynamicMu(E_matrix)
+    
             itere +=1
             #print( "Diff Value:%2.10f and tol value %2.10f"%(diff,tol))
             if(diff<tol): 
@@ -183,10 +183,8 @@ def RPCA(X,Lpenalty=-1,Spenalty =-1, verbose = True):
                 break
 
     if(converged):
-        print("Converged within %d iterations"% itere)
-        return X,L_matrix,S_matrix,E_matrix
+        #print("Converged within %d iterations"% itere)
+        return L_matrix,S_matrix,E_matrix
     else:
-        print("Failed to converge within %d maxIter iterations.\n" %maxIter)
-        print("ERROR: Matrix Values do not converge!")
-    
-        return X,L_matrix,S_matrix,E_matrix
+        raise ValueError('Matrix Values do not converge,failed to converge within'
+        '{0} maxIter iterations'.format(maxIter))
